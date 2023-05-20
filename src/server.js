@@ -22,13 +22,25 @@ const wss = new WebSocket.Server({ server });
 // localhost:3000로 http server or websocket server 돌림(두 개가 같은 포트에 있길 원함)
 // http 서버위에 wss를 만들기 위함
 
+const sockets = [];
+
 wss.on('connection', (socket) => {
+    sockets.push(socket);
+    // 닉네임을 정하지 않은 사람을 위해
+    socket["nickname"] = "Anon";
     console.log("Connected to Browser O");
     socket.on("close", () => console.log("Disconnected to Browser X"));
-    socket.on("message", (message) => {
-        console.log(message.toString('utf-8'))
+    socket.on("message", (msg) => {
+        const message = JSON.parse(msg);
+        switch (message.type) {
+            case "new_message":
+                sockets.forEach(aSocket => aSocket.send(`${socket.nickname}: ${message.payload.toString('utf-8')}`));
+                break;
+            case "nickname":
+                socket["nickname"] = message.payload;
+                break;
+        }   
     })
-    socket.send("hello");
 });
 
 server.listen(3000, handleListen);
