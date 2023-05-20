@@ -22,13 +22,13 @@ const wss = new WebSocket.Server({ server });
 // localhost:3000로 http server or websocket server 돌림(두 개가 같은 포트에 있길 원함)
 // http 서버위에 wss를 만들기 위함
 
-const handleConnection = (socket) => {
-    // 여기서 받는 socket은 연결된 브라우저
-    // Websocket은 브라우저와 서버 사이의 연결
-    // 여기 가져온 socket으로 프론트엔드와 실시간 소통을 할 수 있게 됨.
-    console.log(socket)
-}
-
-wss.on('connection', handleConnection);
+wss.on('connection', (socket) => {
+    console.log("Connected to Browser O");
+    socket.on("close", () => console.log("Disconnected to Browser X"));
+    socket.on("message", (message) => {
+        console.log(message.toString('utf-8'))
+    })
+    socket.send("hello");
+});
 
 server.listen(3000, handleListen);
