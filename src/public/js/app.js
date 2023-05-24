@@ -1,42 +1,28 @@
-const messageList = document.querySelector('ul');
-const nickForm = document.querySelector('#nick');
-const messageForm = document.querySelector('#message');
+// 백앤드 scoket.io와 자동적으로 연결해주는 function
+const socket = io();
 
-// 여기서 socket은 서버로의 연결
-const socket = new WebSocket(`ws://${window.location.host}`);
+const welcome = document.getElementById("welcome");
+const form = welcome.querySelector("form");
 
-socket.addEventListener("open", () => {
-    console.log("Connected to Server O")
-})
+const room = document.getElementById("room");
+room.hidden = true;
 
-const makeMessage = (type, payload) => {
-    const msg = {type, payload};
-    return JSON.stringify(msg);
+let roomName = "";
+
+const showRoom = () => {
+    welcome.hidden = true;
+    room.hidden = false;
+    const h3 = room.querySelector("h3");
+    h3.innerText = `Room ${roomName}`;
 }
 
-socket.addEventListener("message", (message) => {
-    const li = document.createElement('li');
-    li.innerText = message.data;
-    messageList.append(li);
-})
-
-socket.addEventListener("close", () => {
-    console.log("Disconnected to Server X");
-})
-
-const handleSubmit = (event) => {
+const handleRoomSubmit = (event) => {
     event.preventDefault();
-    const input = messageForm.querySelector("input");
-    socket.send(makeMessage("new_message", input.value));
+    const input = form.querySelector("input");
+    // 이벤트 자체를 emit 가능, object도 가능
+    socket.emit("enter_room", input.value, showRoom);
+    roomName = input.value;
     input.value = "";
 }
 
-const handleNickSubmit = (event) => {
-    event.preventDefault();
-    const input = nickForm.querySelector('input');
-    socket.send(makeMessage("nickname", input.value));
-
-}
-
-messageForm.addEventListener("submit", handleSubmit);
-nickForm.addEventListener("submit", handleNickSubmit);
+form.addEventListener("submit", handleRoomSubmit)
