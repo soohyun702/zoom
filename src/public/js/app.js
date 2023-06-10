@@ -15,6 +15,7 @@ let muted = false;
 let cameraOff = false;
 let roomName;
 let myPeerConnection;
+let myDataChannel;
 
 const getCameras = async () => {
     try {
@@ -131,6 +132,10 @@ welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
 // A 브라우저
 socket.on("welcome", async () => {
+    // 데이터 채널 만들어줌(한 번만 만들어주면 됨)
+    myDataChannel = myPeerConnection.createDataChannel("chat");
+    myDataChannel.addEventListener("message", console.log)
+
     const offer = await myPeerConnection.createOffer();
     myPeerConnection.setLocalDescription(offer);
     console.log("sent ")
@@ -139,6 +144,10 @@ socket.on("welcome", async () => {
 
 // B 브라우저
 socket.on("offer", async (offer) => {
+    myPeerConnection.addEventListener("datachannel", (evnet) => {
+        myDataChannel = event.channel;
+        myDataChannel.addEventListener("message", console.log)
+    })
     myPeerConnection.setRemoteDescription(offer);
     const answer = await myPeerConnection.createAnswer();
     myPeerConnection.setLocalDescription(answer);
